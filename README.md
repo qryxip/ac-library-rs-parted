@@ -20,8 +20,8 @@ ac-library-rs-parted is a collection of 17 crates that use modules of the real a
 ```rust
 // In the `$OUT_DIR/lib.rs`
 
-extern crate __acl_foo as bar;
-extern crate __acl_bar as baz;
+extern crate __acl_foo as foo;
+extern crate __acl_bar as bar;
 
 pub use self::items::*;
 
