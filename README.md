@@ -7,6 +7,32 @@
 
 Partitioned [ac-library-rs](https://github.com/rust-lang-ja/ac-library-rs).
 
+## What is this?
+
+ac-library-rs-parted is a collection of 17 crates that use modules of the real ac-library-rs.
+
+```rust
+// In each `$CARGO_MANIFEST_DIR/src/lib.rs`
+
+::core::include!(::core::concat!(::core::env!("OUT_DIR"), "/lib.rs"));
+```
+
+```rust
+// In the `$OUT_DIR/lib.rs`
+
+extern crate __acl_foo as bar;
+extern crate __acl_bar as baz;
+
+pub use self::items::*;
+
+mod items {
+    // The correspond `.rs` file that was modified as follows:
+    //
+    // - Replace `pub(crate)` to `pub`.
+    // - Remove doc comments.
+}
+```
+
 ## License
 
 Licensed under [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/).
