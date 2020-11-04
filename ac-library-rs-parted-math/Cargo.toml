@@ -1,0 +1,19 @@
+[package]
+name = "ac-library-rs-parted-math"
+version = "0.1.0"
+authors = ["Ryo Yamashita <qryxip@gmail.com>"]
+edition = "2018"
+description = "Partitioned ac-library-rs."
+license = "CC0-1.0"
+repository = "https://github.com/qryxip/ac-library-rs-parted"
+keywords = ["competitive"]
+categories = ["algorithms", "data-structures"]
+publish = false
+
+[dependencies]
+__acl_internal_math = { package = "ac-library-rs-parted-internal-math", version = "0.1.0", path = "../ac-library-rs-parted-internal-math" }
+
+[build-dependencies]
+ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
+anyhow = "1.0.34"
+xshell = "0.1.6"

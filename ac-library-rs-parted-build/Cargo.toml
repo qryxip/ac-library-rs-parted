@@ -1,0 +1,29 @@
+[package]
+name = "ac-library-rs-parted-build"
+version = "0.0.0"
+authors = ["Ryo Yamashita <qryxip@gmail.com>"]
+edition = "2018"
+description = "Partitioned ac-library-rs."
+license = "CC0-1.0"
+repository = "https://github.com/qryxip/ac-library-rs-parted"
+keywords = []
+categories = []
+publish = false
+
+[dependencies]
+anyhow = "1.0.34"
+cargo_metadata = "0.12.0"
+syn = { version = "1.0.48", features = ["full"] }
+
+[build-dependencies]
+__ac_library_rs = { package = "ac-library-rs", git = "https://github.com/rust-lang-ja/ac-library-rs", branch = "replace-absolute-paths" }
+anyhow = "1.0.34"
+cargo_metadata = "0.12.0"
+if_chain = "1.0.1"
+itertools = "0.9.0"
+maplit = "1.0.2"
+once_cell = "1.4.1"
+proc-macro2 = { version = "1.0.24", features = ["span-locations"] }
+quote = "1.0.7"
+syn = { version = "1.0.48", features = ["full"] }
+xshell = "0.1.6"
