@@ -19,7 +19,6 @@ fn main() -> anyhow::Result<()> {
 
     let metadata = cm::MetadataCommand::new()
         .manifest_path(Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml"))
-        .other_options(["--frozen".to_owned()])
         .exec()?;
 
     let ac_library_rs_manifest_path = (|| {
