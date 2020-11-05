@@ -31,6 +31,7 @@ mod foo {
     // - Replace `pub(crate)` to `pub`.
     // - Remove module doc, which cannot be directly included.
     // - Indent if it has no multi-line literals.
+}
 ```
 
 ## License
