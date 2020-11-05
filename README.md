@@ -1,6 +1,7 @@
 # ac-library-rs-parted
 
 [![CI](https://github.com/qryxip/ac-library-rs-parted/workflows/CI/badge.svg)](https://github.com/qryxip/ac-library-rs-parted/actions?workflow=CI)
+[![minimum rustc 1.41.1](https://img.shields.io/badge/rustc-1.41.1+-red.svg)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
 [![Crates.io](https://img.shields.io/crates/v/ac-library-rs-parted.svg)](https://crates.io/crates/ac-library-rs-parted)
 [![Crates.io](https://img.shields.io/crates/l/ac-library-rs-parted.svg)](https://crates.io/crates/ac-library-rs-parted)
 
