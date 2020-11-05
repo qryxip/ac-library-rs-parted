@@ -4,6 +4,7 @@ use itertools::Itertools as _;
 use itertools_num::ItertoolsNum as _;
 use lazy_static::lazy_static;
 use maplit::hashmap;
+use matches::matches;
 use proc_macro2::{LineColumn, Span, TokenStream, TokenTree};
 use std::{
     collections::HashMap,
@@ -193,12 +194,11 @@ fn indent(code: &str) -> String {
         .parse::<TokenStream>()
         .into_iter()
         .flat_map(IntoIterator::into_iter)
-        .any(|tt| {
-            matches!(
-                tt, TokenTree::Literal(lit)
-                if lit.span().start().line != lit.span().end().line
-            )
-        });
+        .flat_map(|tt| match tt {
+            TokenTree::Literal(lit) => Some(lit),
+            _ => None,
+        })
+        .any(|lit| lit.span().start().line != lit.span().end().line);
 
     if is_safe {
         code.lines()

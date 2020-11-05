@@ -14,12 +14,14 @@ publish = false
 anyhow = "1.0.34"
 
 [build-dependencies]
-__ac_library_rs = { package = "ac-library-rs", git = "https://github.com/rust-lang-ja/ac-library-rs", branch = "replace-absolute-paths" }
+_ac_library_rs = { package = "ac-library-rs", git = "https://github.com/rust-lang-ja/ac-library-rs", branch = "replace-absolute-paths" }
+_semver_parser = { package = "semver-parser", version = "=0.10.0" } # https://github.com/oli-obk/cargo_metadata/issues/137
 anyhow = "1.0.34"
 cargo_metadata = "0.12.0"
 itertools = "=0.9.0"
 itertools-num = "=0.1.3"
 lazy_static = "=1.4.0"
 maplit = "=1.0.2"
+matches = "0.1.8"
 proc-macro2 = { version = "=1.0.10", features = ["span-locations"] }
 syn = { version = "=1.0.17", features = ["full"] }
