@@ -12,6 +12,9 @@ keywords = ["competitive"]
 categories = ["algorithms", "data-structures"]
 publish = false
 
+[lib]
+name = "ac_library_rs"
+
 [dependencies]
 __acl_convolution = { package = "ac-library-rs-parted-convolution", version = "0.1.0", path = "./ac-library-rs-parted-convolution" }
 __acl_dsu         = { package = "ac-library-rs-parted-dsu"        , version = "0.1.0", path = "./ac-library-rs-parted-dsu"         }

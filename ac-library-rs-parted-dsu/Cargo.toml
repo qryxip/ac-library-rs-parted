@@ -10,6 +10,9 @@ keywords = ["competitive"]
 categories = ["algorithms", "data-structures"]
 publish = false
 
+[lib]
+name = "acl_dsu"
+
 [build-dependencies]
 ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
 anyhow = "1.0.34"

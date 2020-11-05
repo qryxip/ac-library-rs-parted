@@ -10,6 +10,9 @@ keywords = ["competitive"]
 categories = ["algorithms", "data-structures"]
 publish = false
 
+[lib]
+name = "acl_convolution"
+
 [dependencies]
 __acl_internal_bit = { package = "ac-library-rs-parted-internal-bit", version = "0.1.0", path = "../ac-library-rs-parted-internal-bit" }
 __acl_internal_math = { package = "ac-library-rs-parted-internal-math", version = "0.1.0", path = "../ac-library-rs-parted-internal-math" }

@@ -10,6 +10,9 @@ keywords = ["competitive"]
 categories = ["algorithms", "data-structures"]
 publish = false
 
+[lib]
+name = "acl_segtree"
+
 [dependencies]
 __acl_internal_bit = { package = "ac-library-rs-parted-internal-bit", version = "0.1.0", path = "../ac-library-rs-parted-internal-bit" }
 __acl_internal_type_traits = { package = "ac-library-rs-parted-internal-type-traits", version = "0.1.0", path = "../ac-library-rs-parted-internal-type-traits" }
