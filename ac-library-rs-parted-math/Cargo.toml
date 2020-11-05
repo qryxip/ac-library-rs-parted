@@ -16,6 +16,9 @@ name = "acl_math"
 [dependencies]
 __acl_internal_math = { package = "ac-library-rs-parted-internal-math", version = "0.1.0", path = "../ac-library-rs-parted-internal-math" }
 
+[dev-dependencies]
+ac-library-rs-parted = { version = "0.*", path = "../" }
+
 [build-dependencies]
 ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
 anyhow = "1.0.34"
