@@ -260,6 +260,12 @@ fn run_rustfmt(path: &Path) -> anyhow::Result<()> {
         .with_file_name("rustfmt")
         .with_extension(env::consts::EXE_EXTENSION);
 
+    ensure!(
+        rustfmt_exe.exists(),
+        "{} does not exist",
+        rustfmt_exe.display()
+    );
+
     let status = Command::new(&rustfmt_exe)
         .args(&["--edition", "2018"])
         .arg(path)

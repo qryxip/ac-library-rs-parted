@@ -65,7 +65,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           default: true
           profile: minimal
-          components: clippy
+          components: rustfmt, clippy
 
       - name: cargo-clippy
         uses: actions-rs/cargo@v1
