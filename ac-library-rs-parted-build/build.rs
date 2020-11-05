@@ -1,14 +1,15 @@
 use anyhow::{ensure, Context as _};
 use cargo_metadata as cm;
-use if_chain::if_chain;
 use itertools::Itertools as _;
-use maplit::{btreemap, hashmap};
-use once_cell::sync::Lazy;
-use proc_macro2::{LineColumn, TokenStream, TokenTree};
+use itertools_num::ItertoolsNum as _;
+use lazy_static::lazy_static;
+use maplit::hashmap;
+use proc_macro2::{LineColumn, Span, TokenStream, TokenTree};
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
     env,
     ffi::OsStr,
+    iter,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -63,7 +64,7 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
     let syn::File { items, .. } = syn::parse_file(code)?;
 
     let mut pub_extern_crates = "".to_owned();
-    let mut replacements = btreemap!();
+    let mut insertions = vec![];
 
     for item in items {
         if let Item::Mod(ItemMod { vis, ident, .. }) = &item {
@@ -74,27 +75,22 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
                 );
             }
 
-            let pos = item.span().start();
-            replacements.insert((pos, pos), "/*".to_owned());
-            let pos = item.span().end();
-            replacements.insert((pos, pos), "*/".to_owned());
+            insertions.push((item.span().start(), "/*".to_owned()));
+            insertions.push((item.span().end(), "*/".to_owned()));
         }
     }
 
     Ok(format!(
         "{}\npub use self::lib::*;\n\nmod lib {{\n{}}}\n",
         pub_extern_crates,
-        indent(&replace_ranges(code, replacements)),
+        indent(&replace_ranges(code, &[], &insertions)),
     ))
 }
 
 fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
-    fn visit_pub_visibilities(
-        item: &Item,
-        replacements: &mut BTreeMap<(LineColumn, LineColumn), String>,
-    ) {
+    fn visit_pub_visibilities(item: &Item, replacements: &mut Vec<(Span, String)>) {
         struct Visitor<'a> {
-            replacements: &'a mut BTreeMap<(LineColumn, LineColumn), String>,
+            replacements: &'a mut Vec<(Span, String)>,
         }
 
         impl Visit<'_> for Visitor<'_> {
@@ -106,8 +102,7 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
                 }) = i
                 {
                     if path.is_ident("crate") {
-                        self.replacements
-                            .insert((i.span().start(), i.span().end()), "pub".to_owned());
+                        self.replacements.push((i.span(), "pub".to_owned()));
                     }
                 }
             }
@@ -116,8 +111,8 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
         Visitor { replacements }.visit_item(item)
     }
 
-    static DEPS: Lazy<HashMap<&str, &[&str]>> = Lazy::new(|| {
-        hashmap!(
+    lazy_static! {
+        static ref DEPS: HashMap<&'static str, &'static [&'static str]> = hashmap!(
             "convolution" => &["internal_bit", "internal_math", "modint"][..],
             "lazysegtree" => &["internal_bit", "segtree"],
             "math" => &["internal_math"],
@@ -127,17 +122,17 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
             "scc" => &["internal_scc"],
             "segtree" => &["internal_bit", "internal_type_traits"],
             "twosat" => &["internal_scc"],
-        )
-    });
+        );
+    }
 
     let file = syn::parse_file(code)?;
 
-    let mut replacements = btreemap!();
+    let mut replacements = vec![];
 
     for attr in &file.attrs {
         if let Ok(meta) = attr.parse_meta() {
             if meta.path().is_ident("doc") {
-                replacements.insert((attr.span().start(), attr.span().end()), "".to_owned());
+                replacements.push((attr.span(), "".to_owned()));
             }
         }
     }
@@ -155,55 +150,41 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
             .map(|dep| format!("extern crate __acl_{dep} as {dep};\n", dep = dep))
             .format(""),
         name = name,
-        code = indent(&replace_ranges(code, replacements)),
+        code = indent(&replace_ranges(code, &replacements, &[])),
     ))
 }
 
-fn replace_ranges(code: &str, replacements: BTreeMap<(LineColumn, LineColumn), String>) -> String {
-    let replacements = replacements.into_iter().collect::<Vec<_>>();
-    let mut replacements = &*replacements;
-    let mut skip_until = None;
-    let mut ret = "".to_owned();
-    let mut lines = code.trim_end().split('\n').enumerate().peekable();
-    while let Some((i, s)) = lines.next() {
-        for (j, c) in s.chars().enumerate() {
-            if_chain! {
-                if let Some(((start, end), replacement)) = replacements.get(0);
-                if (i, j) == (start.line - 1, start.column);
-                then {
-                    ret += replacement;
-                    if start == end {
-                        ret.push(c);
-                    } else {
-                        skip_until = Some(*end);
-                    }
-                    replacements = &replacements[1..];
-                } else {
-                    if !matches!(skip_until, Some(LineColumn { line, column }) if (i, j) < (line - 1, column)) {
-                        ret.push(c);
-                        skip_until = None;
-                    }
-                }
-            }
-        }
-        while let Some(((start, end), replacement)) = replacements.get(0) {
-            if i == start.line - 1 {
-                ret += replacement;
-                if start < end {
-                    skip_until = Some(*end);
-                }
-                replacements = &replacements[1..];
-            } else {
-                break;
-            }
-        }
-        if lines.peek().is_some() || code.ends_with('\n') {
-            ret += "\n";
-        }
+fn replace_ranges(
+    code: &str,
+    replacements: &[(Span, String)],
+    insertions: &[(LineColumn, String)],
+) -> String {
+    // `proc-macro 1.0.10` is before this.
+    // https://github.com/alexcrichton/proc-macro2/pull/229
+
+    let from_line_columns = {
+        let column_csum = iter::once(0)
+            .chain(code.split('\n').map(|l| l.len() + 1))
+            .cumsum()
+            .collect::<Vec<usize>>();
+        move |LineColumn { line, column }| column_csum[line - 1] + column
+    };
+
+    let mut code = code.as_bytes().to_owned();
+
+    for (start, end, s) in replacements
+        .iter()
+        .map(|(span, s)| (span.start(), span.end(), s))
+        .chain(insertions.iter().map(|(p, s)| (*p, *p, s)))
+        .map(|(start, end, s)| (from_line_columns(start), from_line_columns(end), s))
+        .sorted()
+        .rev()
+    {
+        code = [&code[..start], s.as_ref(), &code[end..]].concat();
     }
 
-    debug_assert!(syn::parse_file(&code).is_ok());
-    ret
+    String::from_utf8(code)
+        .expect("is something wrong? the version of `proc-macro2` should be `1.0.10`")
 }
 
 fn indent(code: &str) -> String {
