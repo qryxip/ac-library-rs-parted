@@ -4,15 +4,14 @@ use if_chain::if_chain;
 use itertools::Itertools as _;
 use maplit::{btreemap, hashmap};
 use once_cell::sync::Lazy;
-use proc_macro2::LineColumn;
+use proc_macro2::{LineColumn, TokenStream, TokenTree};
 use std::{
     collections::{BTreeMap, HashMap},
     env,
     ffi::OsStr,
     path::{Path, PathBuf},
 };
-use syn::ItemMod;
-use syn::{spanned::Spanned, visit::Visit, Item, VisRestricted, Visibility};
+use syn::{spanned::Spanned, visit::Visit, Item, ItemMod, VisRestricted, Visibility};
 
 fn main() -> anyhow::Result<()> {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -94,7 +93,7 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
          \n\
          mod items {{\n\
          {}}}\n",
-        replace_ranges(code, replacements)
+        indent(&replace_ranges(code, replacements)),
     ))
 }
 
@@ -140,11 +139,11 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
         )
     });
 
-    let syn::File { attrs, items, .. } = syn::parse_file(code)?;
+    let file = syn::parse_file(code)?;
 
     let mut replacements = btreemap!();
 
-    for attr in &attrs {
+    for attr in &file.attrs {
         if let Ok(meta) = attr.parse_meta() {
             if meta.path().is_ident("doc") {
                 replacements.insert((attr.span().start(), attr.span().end()), "".to_owned());
@@ -152,18 +151,18 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
         }
     }
 
-    for item in &items {
+    for item in &file.items {
         visit_pub_visibilities(&item, &mut replacements);
     }
 
     Ok(format!(
-        "{}#[doc(inline)]pub use self::items::*;\nmod items {{\n{}}}\n",
+        "{}pub use self::items::*;\nmod items {{\n{}}}\n",
         DEPS.get(name)
             .unwrap_or(&&[][..])
             .iter()
             .map(|dep| format!("extern crate __acl_{dep} as {dep};\n", dep = dep))
             .format(""),
-        replace_ranges(code, replacements),
+        indent(&replace_ranges(code, replacements)),
     ))
 }
 
@@ -212,4 +211,28 @@ fn replace_ranges(code: &str, replacements: BTreeMap<(LineColumn, LineColumn), S
 
     debug_assert!(syn::parse_file(&code).is_ok());
     ret
+}
+
+fn indent(code: &str) -> String {
+    let is_safe = !code
+        .parse::<TokenStream>()
+        .into_iter()
+        .flat_map(IntoIterator::into_iter)
+        .any(|tt| {
+            matches!(
+                tt, TokenTree::Literal(lit)
+                if lit.span().start().line != lit.span().end().line
+            )
+        });
+
+    if is_safe {
+        code.lines()
+            .map(|line| match line {
+                "" => "\n".to_owned(),
+                line => format!("    {}\n", line),
+            })
+            .join("")
+    } else {
+        code.to_owned()
+    }
 }
