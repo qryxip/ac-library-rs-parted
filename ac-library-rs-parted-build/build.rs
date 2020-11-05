@@ -86,7 +86,7 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
     }
 
     Ok(format!(
-        "{}\npub use self::items::*;\n\nmod items {{\n{}}}\n",
+        "{}\npub use self::lib::*;\n\nmod lib {{\n{}}}\n",
         pub_extern_crates,
         indent(&replace_ranges(code, replacements)),
     ))
@@ -174,13 +174,15 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
     }
 
     Ok(format!(
-        "{}pub use self::items::*;\n\nmod items {{\n{}}}\n",
-        DEPS.get(name)
+        "{extern_crates}pub use self::{name}::*;\n\nmod {name} {{\n{code}}}\n",
+        extern_crates = DEPS
+            .get(name)
             .unwrap_or(&&[][..])
             .iter()
             .map(|dep| format!("extern crate __acl_{dep} as {dep};\n", dep = dep))
             .format(""),
-        indent(&replace_ranges(code, replacements)),
+        name = name,
+        code = indent(&replace_ranges(code, replacements)),
     ))
 }
 
