@@ -31,5 +31,3 @@ __acl_twosat      = { package = "ac-library-rs-parted-twosat"     , version = "0
 
 [build-dependencies]
 ac-library-rs-parted-build = { version = "0.0.0", path = "./ac-library-rs-parted-build" }
-anyhow = "1.0.34"
-xshell = "0.1.6"

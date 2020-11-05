@@ -9,7 +9,7 @@ use std::{
     collections::HashMap,
     env,
     ffi::OsStr,
-    iter,
+    fs, iter,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -46,15 +46,16 @@ fn main() -> anyhow::Result<()> {
     })()
     .with_context(|| "could not find the `ac-library-rs`")?;
 
-    for src in xshell::read_dir(ac_library_rs_manifest_path.with_file_name("src"))? {
-        let code = xshell::read_file(&src)?;
+    for src in fs::read_dir(ac_library_rs_manifest_path.with_file_name("src"))? {
+        let src = src?.path();
+        let code = fs::read_to_string(&src)?;
         let code = match src.file_stem().and_then(OsStr::to_str) {
             Some("lib") => modify_root_module(&code)?,
             Some(name) => modify_sub_module(name, &code)?,
             _ => unreachable!(),
         };
         let dst = out_dir.join(src.file_name().unwrap());
-        xshell::write_file(&dst, code)?;
+        fs::write(&dst, code)?;
         run_rustfmt(&dst)?;
     }
     Ok(())

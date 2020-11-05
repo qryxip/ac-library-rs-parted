@@ -1,3 +1,16 @@
+pub use anyhow;
+
+#[macro_export]
+macro_rules! main {
+    ($content:expr $(,)?) => {
+        fn main() -> $crate::anyhow::Result<()> {
+            let out_dir = ::std::path::PathBuf::from(::std::env::var_os("OUT_DIR").unwrap());
+            ::std::fs::write(out_dir.join("lib.rs"), $content)?;
+            Ok(())
+        }
+    };
+}
+
 pub static CONVOLUTION: &str = include_str!(concat!(env!("OUT_DIR"), "/convolution.rs"));
 pub static DSU: &str = include_str!(concat!(env!("OUT_DIR"), "/dsu.rs"));
 pub static FENWICKTREE: &str = include_str!(concat!(env!("OUT_DIR"), "/fenwicktree.rs"));

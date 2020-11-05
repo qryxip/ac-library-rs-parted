@@ -19,5 +19,3 @@ __acl_internal_type_traits = { package = "ac-library-rs-parted-internal-type-tra
 
 [build-dependencies]
 ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
-anyhow = "1.0.34"
-xshell = "0.1.6"

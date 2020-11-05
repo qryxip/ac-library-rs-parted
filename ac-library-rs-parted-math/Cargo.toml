@@ -21,5 +21,3 @@ ac-library-rs-parted = { version = "0.*", path = "../" }
 
 [build-dependencies]
 ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
-anyhow = "1.0.34"
-xshell = "0.1.6"
