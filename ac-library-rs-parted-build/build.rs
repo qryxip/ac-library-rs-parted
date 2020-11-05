@@ -60,39 +60,28 @@ fn main() -> anyhow::Result<()> {
 fn modify_root_module(code: &str) -> anyhow::Result<String> {
     let syn::File { items, .. } = syn::parse_file(code)?;
 
+    let mut pub_extern_crates = "".to_owned();
     let mut replacements = btreemap!();
 
     for item in items {
         if let Item::Mod(ItemMod { vis, ident, .. }) = &item {
-            replacements.insert(
-                (item.span().start(), item.span().end()),
-                if matches!(vis, Visibility::Public(_)) {
-                    format!("pub extern crate __acl_{ident} as {ident};", ident = ident)
-                } else {
-                    "".to_owned()
-                },
-            );
+            if matches!(vis, Visibility::Public(_)) {
+                pub_extern_crates += &format!(
+                    "pub extern crate __acl_{ident} as {ident};\n",
+                    ident = ident,
+                );
+            }
+
+            let pos = item.span().start();
+            replacements.insert((pos, pos), "/*".to_owned());
+            let pos = item.span().end();
+            replacements.insert((pos, pos), "*/".to_owned());
         }
     }
 
     Ok(format!(
-        "pub extern crate __acl_convolution as convolution;\n\
-         pub extern crate __acl_dsu as dsu;\n\
-         pub extern crate __acl_fenwicktree as fenwicktree;\n\
-         pub extern crate __acl_lazysegtree as lazysegtree;\n\
-         pub extern crate __acl_math as math;\n\
-         pub extern crate __acl_maxflow as maxflow;\n\
-         pub extern crate __acl_mincostflow as mincostflow;\n\
-         pub extern crate __acl_modint as modint;\n\
-         pub extern crate __acl_scc as scc;\n\
-         pub extern crate __acl_segtree as segtree;\n\
-         pub extern crate __acl_string as string;\n\
-         pub extern crate __acl_twosat as twosat;\n\
-         \n\
-         pub use self::items::*;\n\
-         \n\
-         mod items {{\n\
-         {}}}\n",
+        "{}\npub use self::items::*;\n\nmod items {{\n{}}}\n",
+        pub_extern_crates,
         indent(&replace_ranges(code, replacements)),
     ))
 }
