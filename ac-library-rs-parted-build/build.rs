@@ -1,4 +1,4 @@
-use anyhow::Context as _;
+use anyhow::{ensure, Context as _};
 use cargo_metadata as cm;
 use if_chain::if_chain;
 use itertools::Itertools as _;
@@ -11,6 +11,7 @@ use std::{
     env,
     ffi::OsStr,
     path::{Path, PathBuf},
+    process::Command,
 };
 use syn::{
     spanned::Spanned, visit::Visit, Attribute, Item, ItemMod, Meta, MetaList, VisRestricted,
@@ -56,7 +57,8 @@ fn main() -> anyhow::Result<()> {
             _ => unreachable!(),
         };
         let dst = out_dir.join(src.file_name().unwrap());
-        xshell::write_file(dst, code)?;
+        xshell::write_file(&dst, code)?;
+        run_rustfmt(&dst)?;
     }
     Ok(())
 }
@@ -251,4 +253,18 @@ fn indent(code: &str) -> String {
     } else {
         code.to_owned()
     }
+}
+
+fn run_rustfmt(path: &Path) -> anyhow::Result<()> {
+    let rustfmt_exe = Path::new(env!("CARGO"))
+        .with_file_name("rustfmt")
+        .with_extension(env::consts::EXE_EXTENSION);
+
+    let status = Command::new(&rustfmt_exe)
+        .args(&["--edition", "2018"])
+        .arg(path)
+        .status()?;
+
+    ensure!(status.success(), "`rustfmt` failed");
+    Ok(())
 }
