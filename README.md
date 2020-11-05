@@ -29,7 +29,9 @@ mod items {
     // The correspond `.rs` file that was modified as follows:
     //
     // - Replace `pub(crate)` to `pub`.
-    // - Remove doc comments.
+    // - Remove module doc, which cannot be directly included.
+    // - Remove `#[cfg(test)]` items.
+    // - Indent if it has no multi-line literals.
 }
 ```
 

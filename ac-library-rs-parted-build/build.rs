@@ -5,13 +5,17 @@ use itertools::Itertools as _;
 use maplit::{btreemap, hashmap};
 use once_cell::sync::Lazy;
 use proc_macro2::{LineColumn, TokenStream, TokenTree};
+use quote::ToTokens as _;
 use std::{
     collections::{BTreeMap, HashMap},
     env,
     ffi::OsStr,
     path::{Path, PathBuf},
 };
-use syn::{spanned::Spanned, visit::Visit, Item, ItemMod, VisRestricted, Visibility};
+use syn::{
+    spanned::Spanned, visit::Visit, Attribute, Item, ItemMod, Meta, MetaList, VisRestricted,
+    Visibility,
+};
 
 fn main() -> anyhow::Result<()> {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -142,10 +146,33 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
 
     for item in &file.items {
         visit_pub_visibilities(&item, &mut replacements);
+
+        if let Item::Mod(ItemMod { attrs, .. }) = item {
+            let is_test_item = attrs
+                .iter()
+                .flat_map(Attribute::parse_meta)
+                .flat_map(|meta| match meta {
+                    Meta::List(meta_list) => Some(meta_list),
+                    _ => None,
+                })
+                .filter(|MetaList { path, .. }| path.is_ident("cfg"))
+                .flat_map(|MetaList { nested, .. }| {
+                    cfg_expr::Expression::parse(&nested.to_token_stream().to_string()).ok()
+                })
+                .all(|expr| {
+                    expr.eval(|pred| match pred {
+                        cfg_expr::Predicate::Test => Some(true),
+                        _ => None,
+                    }) == Some(true)
+                });
+            if is_test_item {
+                replacements.insert((item.span().start(), item.span().end()), "".to_owned());
+            }
+        }
     }
 
     Ok(format!(
-        "{}pub use self::items::*;\nmod items {{\n{}}}\n",
+        "{}pub use self::items::*;\n\nmod items {{\n{}}}\n",
         DEPS.get(name)
             .unwrap_or(&&[][..])
             .iter()
