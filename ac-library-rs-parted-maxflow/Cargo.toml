@@ -18,4 +18,4 @@ __acl_internal_queue = { package = "ac-library-rs-parted-internal-queue", versio
 __acl_internal_type_traits = { package = "ac-library-rs-parted-internal-type-traits", version = "0.1.0", path = "../ac-library-rs-parted-internal-type-traits" }
 
 [build-dependencies]
-ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
+ac-library-rs-parted-build = { version = "0.1.0", path = "../ac-library-rs-parted-build" }

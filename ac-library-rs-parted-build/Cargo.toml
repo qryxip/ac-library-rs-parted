@@ -1,6 +1,6 @@
 [package]
 name = "ac-library-rs-parted-build"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Ryo Yamashita <qryxip@gmail.com>"]
 edition = "2018"
 description = "Partitioned ac-library-rs."

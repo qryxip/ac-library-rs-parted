@@ -14,4 +14,4 @@ publish = false
 name = "acl_string"
 
 [build-dependencies]
-ac-library-rs-parted-build = { version = "0.0.0", path = "../ac-library-rs-parted-build" }
+ac-library-rs-parted-build = { version = "0.1.0", path = "../ac-library-rs-parted-build" }
