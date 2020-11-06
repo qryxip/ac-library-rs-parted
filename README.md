@@ -1,9 +1,9 @@
 # ac-library-rs-parted
 
 [![CI](https://github.com/qryxip/ac-library-rs-parted/workflows/CI/badge.svg)](https://github.com/qryxip/ac-library-rs-parted/actions?workflow=CI)
-[![Rust 1.41.1+](https://img.shields.io/badge/rust-1.41.1+-lightgray.svg)](https://www.rust-lang.org)
-[![Crates.io](https://img.shields.io/crates/v/ac-library-rs-parted.svg)](https://crates.io/crates/ac-library-rs-parted)
-[![Crates.io](https://img.shields.io/crates/l/ac-library-rs-parted.svg)](https://crates.io/crates/ac-library-rs-parted)
+[![Rust 2018 1.41.1+](https://img.shields.io/badge/rust%202018-1.41.1+-lightgray.svg)](https://www.rust-lang.org)
+![Crates.io](https://img.shields.io/badge/crates.io-not%20yet-inactive)
+![License](https://img.shields.io/badge/license-CC0--1.0-informational)
 
 Partitioned [ac-library-rs](https://github.com/rust-lang-ja/ac-library-rs).
 
