@@ -20,6 +20,13 @@ fn main() -> anyhow::Result<()> {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
 
     let metadata = cm::MetadataCommand::new()
+        .cargo_path(
+            if Path::new(env!("CARGO")).file_stem() == Some("cargo".as_ref()) {
+                env!("CARGO")
+            } else {
+                "cargo"
+            },
+        )
         .manifest_path(Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml"))
         .exec()?;
 
