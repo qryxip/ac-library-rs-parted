@@ -72,16 +72,13 @@ fn main() -> anyhow::Result<()> {
 fn modify_root_module(code: &str) -> anyhow::Result<String> {
     let syn::File { items, .. } = syn::parse_file(code)?;
 
-    let mut pub_extern_crates = "".to_owned();
+    let mut idents = vec![];
     let mut insertions = vec![];
 
     for item in items {
         if let Item::Mod(ItemMod { vis, ident, .. }) = &item {
             if matches!(vis, Visibility::Public(_)) {
-                pub_extern_crates += &format!(
-                    "pub extern crate __acl_{ident} as {ident};\n",
-                    ident = ident,
-                );
+                idents.push(ident.to_string());
             }
 
             insertions.push((item.span().start(), "/*".to_owned()));
@@ -90,8 +87,16 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
     }
 
     Ok(format!(
-        "{}\npub use self::lib::*;\n\nmod lib {{\n{}}}\n",
-        pub_extern_crates,
+        "pub mod __extern_crates {{\n{}}}\npub use self::__extern_crates::{{{}}};\n\n\
+         pub use self::lib::*;\n\nmod lib {{\n{}}}\n",
+        idents
+            .iter()
+            .map(|ident| format!(
+                "    pub extern crate __acl_{ident} as {ident};\n",
+                ident = ident,
+            ))
+            .join(""),
+        idents.iter().format(", "),
         indent(&replace_ranges(code, &[], &insertions)),
     ))
 }
@@ -152,12 +157,23 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
 
     Ok(format!(
         "{extern_crates}pub use self::{name}::*;\n\nmod {name} {{\n{code}}}\n",
-        extern_crates = DEPS
-            .get(name)
-            .unwrap_or(&&[][..])
-            .iter()
-            .map(|dep| format!("extern crate __acl_{dep} as {dep};\n", dep = dep))
-            .format(""),
+        extern_crates = {
+            let deps = DEPS.get(name).copied().unwrap_or(&[]);
+            if deps.is_empty() {
+                "".to_owned()
+            } else {
+                format!(
+                    "mod extern_crates {{\n{}}}\npub use self::extern_crates::{{{}}};\n\n",
+                    deps.iter()
+                        .map(|dep| format!(
+                            "    pub(super) extern crate __acl_{dep} as {dep};\n",
+                            dep = dep,
+                        ))
+                        .format(""),
+                    deps.iter().format(", "),
+                )
+            }
+        },
         name = name,
         code = indent(&replace_ranges(code, &replacements, &[])),
     ))
