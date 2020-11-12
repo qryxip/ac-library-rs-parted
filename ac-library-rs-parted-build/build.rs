@@ -75,8 +75,8 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
     let mut idents = vec![];
     let mut insertions = vec![];
 
-    for item in items {
-        if let Item::Mod(ItemMod { vis, ident, .. }) = &item {
+    for item in &items {
+        if let Item::Mod(ItemMod { vis, ident, .. }) = item {
             if matches!(vis, Visibility::Public(_)) {
                 idents.push(ident.to_string());
             }
@@ -86,17 +86,25 @@ fn modify_root_module(code: &str) -> anyhow::Result<String> {
         }
     }
 
+    if let Some(item) = items.last() {
+        insertions.push((
+            item.span().end(),
+            format!(
+                "\n\nmod __extern_crates {{\n{}}}\npub use self::__extern_crates::{{{}}};\n",
+                idents
+                    .iter()
+                    .map(|ident| format!(
+                        "    pub extern crate __acl_{ident} as {ident};\n",
+                        ident = ident,
+                    ))
+                    .join(""),
+                idents.iter().format(", "),
+            ),
+        ));
+    }
+
     Ok(format!(
-        "pub mod __extern_crates {{\n{}}}\npub use self::__extern_crates::{{{}}};\n\n\
-         pub use self::lib::*;\n\nmod lib {{\n{}}}\n",
-        idents
-            .iter()
-            .map(|ident| format!(
-                "    pub extern crate __acl_{ident} as {ident};\n",
-                ident = ident,
-            ))
-            .join(""),
-        idents.iter().format(", "),
+        "pub use self::lib::*;\n\nmod lib {{\n{}}}\n",
         indent(&replace_ranges(code, &[], &insertions)),
     ))
 }
