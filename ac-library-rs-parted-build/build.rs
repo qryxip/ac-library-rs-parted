@@ -163,7 +163,7 @@ fn modify_sub_module(name: &str, code: &str) -> anyhow::Result<String> {
                 "".to_owned()
             } else {
                 format!(
-                    "mod extern_crates {{\n{}}}\npub use self::extern_crates::{{{}}};\n\n",
+                    "mod extern_crates {{\n{}}}\nuse self::extern_crates::{{{}}};\n\n",
                     deps.iter()
                         .map(|dep| format!(
                             "    pub(super) extern crate __acl_{dep} as {dep};\n",
