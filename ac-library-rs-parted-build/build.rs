@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
         };
         let dst = out_dir.join(src.file_name().unwrap());
         fs::write(&dst, code)?;
-        run_rustfmt(&dst)?;
+        attempt_rustfmt(&dst)?;
     }
     Ok(())
 }
@@ -243,22 +243,17 @@ fn indent(code: &str) -> String {
     }
 }
 
-fn run_rustfmt(path: &Path) -> anyhow::Result<()> {
+fn attempt_rustfmt(path: &Path) -> anyhow::Result<()> {
     let rustfmt_exe = Path::new(env!("CARGO"))
         .with_file_name("rustfmt")
         .with_extension(env::consts::EXE_EXTENSION);
 
-    ensure!(
-        rustfmt_exe.exists(),
-        "{} does not exist",
-        rustfmt_exe.display()
-    );
-
-    let status = Command::new(&rustfmt_exe)
-        .args(&["--edition", "2018"])
-        .arg(path)
-        .status()?;
-
-    ensure!(status.success(), "`rustfmt` failed");
+    if rustfmt_exe.exists() {
+        let status = Command::new(&rustfmt_exe)
+            .args(&["--edition", "2018"])
+            .arg(path)
+            .status()?;
+        ensure!(status.success(), "`rustfmt` failed");
+    }
     Ok(())
 }
