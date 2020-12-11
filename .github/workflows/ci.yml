@@ -29,11 +29,17 @@ jobs:
           profile: minimal
           components: rustfmt
 
-      - name: cargo-fmt
+      - name: cargo-fmt (ac-library-rs-parted)
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
+
+      - name: cargo-fmt (xtask)
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path ./xtask/Cargo.toml -- --check
 
   build:
     strategy:
@@ -71,13 +77,19 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
           profile: minimal
-          components: rustfmt, clippy
+          components: clippy
 
-      - name: cargo-clippy
+      - name: cargo-clippy (ac-library-rs-parted)
         uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --workspace --all-targets -- -D warnings
+
+      - name: cargo-clippy (xtask)
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path ./xtask/Cargo.toml -- -D warnings
 
       - name: cargo-test
         uses: actions-rs/cargo@v1

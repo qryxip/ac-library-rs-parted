@@ -15,6 +15,3 @@ name = "acl_twosat"
 
 [dependencies]
 __acl_internal_scc = { package = "ac-library-rs-parted-internal-scc", version = "0.1.0", path = "../ac-library-rs-parted-internal-scc" }
-
-[build-dependencies]
-ac-library-rs-parted-build = { version = "0.1.0", path = "../ac-library-rs-parted-build" }

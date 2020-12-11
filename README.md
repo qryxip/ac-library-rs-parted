@@ -9,16 +9,10 @@ Partitioned [ac-library-rs](https://github.com/rust-lang-ja/ac-library-rs).
 
 ## What is this?
 
-ac-library-rs-parted is a collection of 17 crates that use modules of the real ac-library-rs.
+ac-library-rs-parted is a collection of 17 crates that use modules from the real ac-library-rs.
 
 ```rust
-// In each `$CARGO_MANIFEST_DIR/src/lib.rs`
-
-::core::include!(::core::concat!(::core::env!("OUT_DIR"), "/lib.rs"));
-```
-
-```rust
-// In the `$OUT_DIR/lib.rs`
+//! Module-level document from the original ac-library-rs
 
 extern crate __acl_bar as bar;
 extern crate __acl_baz as baz;
@@ -29,9 +23,14 @@ mod foo {
     // The correspond `foo.rs` file that was modified as follows:
     //
     // - Replace `pub(crate)` to `pub`.
-    // - Remove module doc, which cannot be directly included.
     // - Indent if it has no multi-line literals.
 }
+```
+
+## How to update this repository
+
+```console
+❯ cargo update --manifest-path ./xtask/Cargo.toml && cargo xtask
 ```
 
 ## License

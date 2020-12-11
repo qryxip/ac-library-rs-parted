@@ -28,6 +28,3 @@ __acl_scc         = { package = "ac-library-rs-parted-scc"        , version = "0
 __acl_segtree     = { package = "ac-library-rs-parted-segtree"    , version = "0.1.0", path = "./ac-library-rs-parted-segtree"     }
 __acl_string      = { package = "ac-library-rs-parted-string"     , version = "0.1.0", path = "./ac-library-rs-parted-string"      }
 __acl_twosat      = { package = "ac-library-rs-parted-twosat"     , version = "0.1.0", path = "./ac-library-rs-parted-twosat"      }
-
-[build-dependencies]
-ac-library-rs-parted-build = { version = "0.1.0", path = "./ac-library-rs-parted-build" }

@@ -20,6 +20,3 @@ __acl_modint = { package = "ac-library-rs-parted-modint", version = "0.1.0", pat
 
 [dev-dependencies]
 rand = "0.7.3"
-
-[build-dependencies]
-ac-library-rs-parted-build = { version = "0.1.0", path = "../ac-library-rs-parted-build" }

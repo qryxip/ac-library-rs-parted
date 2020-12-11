@@ -12,6 +12,3 @@ publish = false
 
 [lib]
 name = "acl_internal_type_traits"
-
-[build-dependencies]
-ac-library-rs-parted-build = { version = "0.1.0", path = "../ac-library-rs-parted-build" }
