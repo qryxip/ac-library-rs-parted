@@ -209,7 +209,7 @@ mod maxflow {
                 self.graph.g[e_to][e_rev].cap -= d;
                 res += d;
                 if res == up {
-                    break;
+                    return res;
                 }
             }
             self.iter[v] = self.graph.g[v].len();
@@ -327,6 +327,17 @@ mod maxflow {
             }
 
             assert_eq!(graph.flow(s, t), 2);
+        }
+
+        #[test]
+        fn test_dont_repeat_same_phase() {
+            let n = 100_000;
+            let mut graph = MfGraph::new(3);
+            graph.add_edge(0, 1, n);
+            for _ in 0..n {
+                graph.add_edge(1, 2, 1);
+            }
+            assert_eq!(graph.flow(0, 2), n);
         }
     }
 }

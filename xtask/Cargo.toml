@@ -9,14 +9,14 @@ license = "CC0-1.0"
 publish = false
 
 [dependencies]
-anyhow = "1.0.35"
-cargo_metadata = "0.12.1"
-duct = "0.13.4"
-itertools = "0.9.0"
+anyhow = "1.0.38"
+cargo_metadata = "0.12.3"
+duct = "0.13.5"
+itertools = "0.10.0"
 proc-macro2 = { version = "1.0.24", features = ["span-locations"] }
-quote = "1.0.7"
+quote = "1.0.9"
 structopt = "0.3.21"
-syn = { version = "1.0.54", features = ["full", "parsing", "visit"] }
+syn = { version = "1.0.60", features = ["full", "parsing", "visit"] }
 
 [build-dependencies]
 _ac_library_rs = { package = "ac-library-rs", git = "https://github.com/rust-lang-ja/ac-library-rs", branch = "replace-absolute-paths" }
